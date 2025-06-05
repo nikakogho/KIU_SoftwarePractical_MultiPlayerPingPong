@@ -34,4 +34,37 @@ describe('RoomManager pairing', () => {
     expect(manager.getRooms().length).toBe(1);
     expect(manager.getLobby().length).toBe(1);
   });
+
+  it('removes player from lobby when they leave', () => {
+    manager.joinLobby('p1');
+    manager.leaveRoom('p1');
+    expect(manager.getLobbyCount()).toBe(0);
+  });
+
+  it('dissolves room when a player leaves', () => {
+    manager.joinLobby('p1');
+    manager.joinLobby('p2');
+    manager.pairPlayers();
+    manager.leaveRoom('p1');
+    expect(manager.getRooms().length).toBe(0);
+    expect(manager.getLobby()).toContain('p2');
+  });
+
+  it('removes expired player from lobby', () => {
+    manager.joinLobby('p1');
+    // simulate timeout
+    (manager as any).sessions['p1'] = Date.now() - 11000;
+    manager.cleanExpiredSessions();
+    expect(manager.getLobbyCount()).toBe(0);
+  });
+
+  it('dissolves room when a player session expires', () => {
+    manager.joinLobby('p1');
+    manager.joinLobby('p2');
+    manager.pairPlayers();
+    (manager as any).sessions['p1'] = Date.now() - 11000;
+    manager.cleanExpiredSessions();
+    expect(manager.getRooms().length).toBe(0);
+    expect(manager.getLobby()).toContain('p2');
+  });
 });
