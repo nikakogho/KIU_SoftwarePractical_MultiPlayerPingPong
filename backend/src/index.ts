@@ -16,6 +16,30 @@ setInterval(() => roomManager.cleanExpiredSessions(), 1000);
 
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
+
+  socket.on('joinRoom', ({ roomId, playerId }) => {
+    if (typeof roomId !== 'string' || typeof playerId !== 'string') return;
+    const room = roomManager.getRoomById(roomId);
+    if (!room || !room.players.includes(playerId)) return;
+    socket.data.playerId = playerId;
+    socket.data.roomId = roomId;
+    socket.join(roomId);
+    roomManager.connectSocket(roomId, playerId, socket, io);
+  });
+
+  socket.on('move', (x: number) => {
+    const { playerId, roomId } = socket.data as { playerId?: string; roomId?: string };
+    if (typeof playerId === 'string' && typeof roomId === 'string') {
+      roomManager.movePaddle(roomId, playerId, x);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    const { playerId } = socket.data as { playerId?: string };
+    if (typeof playerId === 'string') {
+      roomManager.leaveRoom(playerId);
+    }
+  });
 });
 
 app.post('/lobby/join', (req, res) => {

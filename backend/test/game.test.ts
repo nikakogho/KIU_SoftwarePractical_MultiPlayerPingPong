@@ -44,4 +44,17 @@ describe('Game physics', () => {
     game.step();
     expect(game.getState().score.top).toBe(1);
   });
+
+  it('detects when a player wins', () => {
+    for (let i = 0; i < 7; i++) {
+      const state = game.getState();
+      state.ball.y = game['height'];
+      state.ball.vy = game['ballSpeedY'];
+      state.ball.x = 0;
+      (game as any).ball = state.ball;
+      game.step();
+    }
+    expect(game.isOver()).toBe(true);
+    expect(game.getWinner()).toBe('top');
+  });
 });

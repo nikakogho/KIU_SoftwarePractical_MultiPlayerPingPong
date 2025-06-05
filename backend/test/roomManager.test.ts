@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoomManager } from '../src/roomManager';
+import { Game } from '../src/game';
+import { EventEmitter } from 'events';
 
 describe('RoomManager pairing', () => {
   let manager: RoomManager;
@@ -66,5 +68,32 @@ describe('RoomManager pairing', () => {
     manager.cleanExpiredSessions();
     expect(manager.getRooms().length).toBe(0);
     expect(manager.getLobby()).toContain('p2');
+  });
+
+  it('disconnects sockets when a player leaves', () => {
+    manager.joinLobby('p1');
+    manager.joinLobby('p2');
+    manager.pairPlayers();
+    const roomId = manager.getRooms()[0].id;
+    const sock1 = new EventEmitter() as any;
+    sock1.disconnect = vi.fn();
+    const sock2 = new EventEmitter() as any;
+    sock2.disconnect = vi.fn();
+    (manager as any).gameData[roomId] = { game: new Game(), sockets: { p1: sock1, p2: sock2 } };
+    manager.leaveRoom('p1');
+    expect(sock1.disconnect).toHaveBeenCalled();
+    expect(sock2.disconnect).toHaveBeenCalled();
+  });
+
+  it('allows players to play again after a game ends', () => {
+    manager.joinLobby('p1');
+    manager.joinLobby('p2');
+    manager.pairPlayers();
+    const roomId = manager.getRooms()[0].id;
+    (manager as any).gameData[roomId] = { game: new Game(), sockets: {} };
+    (manager as any).gameData[roomId].game['score'].top = 7;
+    (manager as any).endGame(roomId, { to: () => ({ emit: () => {} }) } as any);
+    manager.pairPlayers();
+    expect(manager.getRooms().length).toBe(1);
   });
 });
