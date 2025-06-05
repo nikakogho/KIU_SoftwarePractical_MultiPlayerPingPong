@@ -7,7 +7,11 @@ let proc: any
 
 const startServer = async () => {
   const root = path.resolve(__dirname, '../..')
-  proc = spawn('npx', ['-y', 'ts-node', '--transpile-only', 'backend/src/index.ts'], { cwd: root })
+  const tsNode = path.join(root, 'backend/node_modules/ts-node/dist/bin.js')
+  proc = spawn('node', [tsNode, '--transpile-only', 'src/index.ts'], {
+    cwd: path.join(root, 'backend'),
+    stdio: 'ignore',
+  })
   await new Promise((r) => setTimeout(r, 1000))
 }
 
