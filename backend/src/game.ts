@@ -109,4 +109,14 @@ export class Game {
       vy,
     };
   }
+
+  isOver(): boolean {
+    return this.score.top >= 7 || this.score.bottom >= 7;
+  }
+
+  getWinner(): 'top' | 'bottom' | null {
+    if (this.score.top >= 7) return 'top';
+    if (this.score.bottom >= 7) return 'bottom';
+    return null;
+  }
 }
