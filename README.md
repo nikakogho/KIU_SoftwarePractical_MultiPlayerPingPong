@@ -68,24 +68,14 @@ cd multiplayer-pong
 
 ```bash
 cd backend
-# Initialise and install
-npm init -y                                 # creates package.json
-npm install express socket.io
-npm install -D typescript ts-node-dev @types/node @types/express
-npx tsc --init                              # generates tsconfig.json
-
-# Add a dev script to package.json:
-#  "scripts": { "dev": "ts-node-dev --respawn src/index.ts" }
-
-mkdir src && touch src/index.ts             # scaffold entry file
-npm run dev                                 # starts http://localhost:4000
+npm install
+npm run dev  # http://localhost:4000
 ```
 
 ### 3. Spin up the frontend
 
 ```bash
 cd ../frontend
-npm create vite@latest . -- --template react-ts
 npm install
 npm install socket.io-client
 npm run dev                                 # opens http://localhost:5173
@@ -101,19 +91,33 @@ Watch the console for connection logs.
 | Location          | Script        | Purpose                           |
 | ----------------- | ------------- | --------------------------------- |
 | `/backend`        | `npm run dev` | Auto‑reload TypeScript server     |
+| `/backend`        | `npm test`    | Run backend unit tests            |
 | `/frontend`       | `npm run dev` | Hot‑module‑reloading React client |
 | root *(optional)* | `npm run dev` | Run both via `concurrently`       |
 
 > To wire the root script, install dev deps at the repo root:
-`npm install -D concurrently && \ echo '{ "scripts": { "dev": "concurrently \\"npm:start-backend\\" \\"npm:start-frontend\\"" } }' > package.json`
+`npm install -D concurrently && \ echo '{ "scripts": { "dev": "concurrently \"npm:start-backend\" \"npm:start-frontend\"" } }' > package.json`
+
+## Backend HTTP API
+
+### REST endpoints
+
+| Method | Path            | Body                     | Response                              |
+| ------ | --------------- | ------------------------ | ------------------------------------- |
+| POST   | `/lobby/join`   | `{ playerId: string }`   | `{ lobby: string[] }`                 |
+| POST   | `/pair`         | –                        | `{ rooms: Room[], lobby: string[] }`  |
+| POST   | `/room/leave`   | `{ playerId: string }`   | `{ rooms: Room[], lobby: string[] }`  |
+| POST   | `/session/ping` | `{ playerId: string }`   | `{ ok: true }`                        |
+| GET    | `/lobby/count`  | –                        | `{ count: number }`                   |
 
 ## 📡 Socket.IO Event Contract (TL;DR)
 
-| Direction      | Event        | Payload                                               |
-| -------------- | ------------ | ----------------------------------------------------- |
-| client→server  | `paddleMove` | `{ y: number }` (current paddle Y)                    |
-| server→clients | `state`      | `{ ball: {x,y}, paddles: {left,right}, score:{l,r} }` |
-| server→clients | `gameOver`   | `{ winner: "left" \| "right" }`                       |
+| Direction      | Event      | Payload                                                                          |
+| -------------- | ---------- | -------------------------------------------------------------------------------- |
+| client→server  | `joinRoom` | `{ roomId: string, playerId: string }`                                           |
+| client→server  | `move`     | `number` (paddle X position)                                                     |
+| server→clients | `state`    | `{ ball: {x, y, vx, vy}, paddles: {top:{x}, bottom:{x}}, score: {top, bottom} }` |
+| server→clients | `gameOver` | `{ winner: 'top' | 'bottom' }`                                                  |
 
 ## ✨ Next Steps
 
