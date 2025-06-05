@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { connectToRoom, sendMove } from '../api'
+import { connectToRoom, sendMove, pingSession } from '../api'
 import type { GameState } from '../types'
 import { GameCanvas } from './GameCanvas'
+import { ScoreBoard } from './ScoreBoard'
 import type { Socket } from 'socket.io-client'
 
 export function Game({ roomId, playerId }: { roomId: string; playerId: string }) {
@@ -21,6 +22,14 @@ export function Game({ roomId, playerId }: { roomId: string; playerId: string })
     }
   }, [roomId, playerId])
 
+  // keep session alive while playing
+  useEffect(() => {
+    const id = setInterval(() => {
+      pingSession(playerId).catch(() => {})
+    }, 5000)
+    return () => clearInterval(id)
+  }, [playerId])
+
   useEffect(() => {
     const id = setInterval(() => {
       if (socketRef.current) {
@@ -39,5 +48,10 @@ export function Game({ roomId, playerId }: { roomId: string; playerId: string })
     return <div>Winner: {winner}</div>
   }
 
-  return <GameCanvas state={state} onMouseMove={onMouseMove} />
+  return (
+    <div>
+      {state && <ScoreBoard score={state.score} />}
+      <GameCanvas state={state} onMouseMove={onMouseMove} />
+    </div>
+  )
 }
