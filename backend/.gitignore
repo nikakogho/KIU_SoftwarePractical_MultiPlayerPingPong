@@ -1,7 +1,5 @@
 # Node modules
 node_modules/
-# Ignore lock files for simplicity
-package-lock.json
 # Logs
 npm-debug.log*
 yarn-debug.log*
