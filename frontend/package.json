@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run src/api.test.ts && vitest run src/gameplay.test.ts && vitest run src/components/Game.test.tsx && vitest run src/components/ScoreBoard.test.tsx && vitest run src/utils/sum.test.ts"
   },
   "dependencies": {
     "react": "^19.1.0",
