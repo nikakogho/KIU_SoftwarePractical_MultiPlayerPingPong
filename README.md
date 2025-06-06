@@ -119,9 +119,23 @@ Watch the console for connection logs.
 | server→clients | `state`    | `{ ball: {x, y, vx, vy}, paddles: {top:{x}, bottom:{x}}, score: {top, bottom} }` |
 | server→clients | `gameOver` | `{ winner: 'top' | 'bottom' }`                                                  |
 
-## ✨ Next Steps
 
-1. Flesh out src/index.ts of backend with room logic and simple physics loop (~60 fps setInterval).
-2. In the React app, render <canvas> and draw the game every animation frame.
-3. Harden with TypeScript interfaces shared between client & server (/common folder or npm workspace).
-4. Add tests or a Cypress integration suite if required.
+## 🌺 Current Implementation
+
+### Backend
+- Express server exposes endpoints for joining the lobby, pairing players, leaving rooms and keeping sessions alive.
+- `RoomManager` manages lobby membership, active rooms and session timeouts. Expired sessions are cleaned every second.
+- When two players enter a room a `Game` instance starts a physics loop (50 ms tick) and broadcasts state via Socket.IO.
+- The game handles paddle movement, ball collisions and scoring. The first player to reach seven points triggers a `gameOver` message.
+
+### Frontend
+- `Lobby` shows how many players are waiting, allows joining the lobby and pairing into a room.
+- Once paired, `Game` connects through Socket.IO, draws the match on a `<canvas>` and sends paddle positions based on the mouse.
+- `ScoreBoard` displays the live score and a winner banner appears when the match ends.
+- The client periodically pings the backend while playing to keep the session active.
+
+## 🚧 Remaining Work
+- Persist player IDs across refreshes so players can reconnect to games.
+- Share TypeScript interfaces between client and server for stronger typing.
+- Improve styling and add user feedback on errors or disconnects.
+- Expand unit tests and consider adding a Cypress integration suite.
